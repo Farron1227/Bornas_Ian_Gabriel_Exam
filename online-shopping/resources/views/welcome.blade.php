@@ -14,6 +14,8 @@
         @vite(['resources/css/app.css','resources/js/app.js'])
     </head>
     <body>
+        <main id="container">
         <div id="app"></div>
+        </main>
     </body>
 </html>
