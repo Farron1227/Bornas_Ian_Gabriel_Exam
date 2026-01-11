@@ -1,7 +1,8 @@
 <template>
-    <section>
+    <div class="container">
+        <section>
             <div class="titlebar">
-                <h1>Products</h1>
+                <h1>PurpleBug - Online Shopping Dashboard</h1>
                 <button>Add Product</button>
             </div>
             <div class="table">
@@ -59,4 +60,5 @@
                 </div>
             </div>
         </section>
+    </div>
 </template>
