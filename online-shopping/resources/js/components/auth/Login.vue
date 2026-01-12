@@ -1,22 +1,84 @@
 <template>
-    <div class="login-container">
-        <h2>Login</h2>
-        <form @submit.prevent="handleLogin">
-            <div>
-                <label>Email:</label>
-                <input type="email" v-model="email" required />
+    <div class="login-page">
+        <div class="login-card">
+            <div class="logo-container">
+                <h1 class="logo-text">PurpleBug®</h1>
             </div>
-            <div>
-                <label>Password:</label>
-                <input type="password" v-model="password" required />
-            </div>
-            <button type="submit">Login</button>
 
-            <p class="signup-link">
-            Don't have an account?
-            <router-link to="/signup">Sign Up</router-link>
-            </p>
-        </form>
-      
+            <form @submit.prevent="handleLogin" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <div class="input-with-icon">
+                        <span class="icon">@</span>
+                        <input 
+                            id="email"
+                            type="email" 
+                            v-model="formData.email" 
+                            placeholder="Enter your email"
+                            required 
+                        />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-with-icon">
+                        <span class="icon">🔒</span>
+                        <input 
+                            id="password"
+                            type="password" 
+                            v-model="formData.password" 
+                            placeholder="Enter your password"
+                            required 
+                        />
+                    </div>
+                </div>
+
+                <button type="submit" class="login-button" :disabled="loading">
+                    {{ loading ? 'Logging in...' : 'LOGIN' }}
+                </button>
+
+                <p class="signup-link">
+                    Don't have an account?
+                    <router-link to="/signup">Sign Up</router-link>
+                </p>
+            </form>
+        </div>
     </div>
 </template>
+
+<script setup>
+import { ref, inject } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../../stores/authStore';
+
+const router = useRouter();
+const authStore = useAuthStore();
+const notify = inject('notify');
+
+const formData = ref({
+    email: '',
+    password: '',
+});
+
+const loading = ref(false);
+
+const handleLogin = async () => {
+    loading.value = true;
+    try {
+        await authStore.login(formData.value);
+        notify.success('Login successful!');
+        
+        // Redirect based on role
+        if (authStore.isAdmin) {
+            router.push('/admin');
+        } else {
+            router.push('/products');
+        }
+    } catch (error) {
+        notify.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+        loading.value = false;
+    }
+};
+</script>
