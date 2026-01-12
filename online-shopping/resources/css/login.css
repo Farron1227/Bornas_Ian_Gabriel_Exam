@@ -1,0 +1,137 @@
+/* ==========================================================================
+   LOGIN PAGE STYLES
+========================================================================== */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.login-card {
+    background: white;
+    border-radius: 16px;
+    padding: 48px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 420px;
+}
+
+.login-card .logo-container {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.login-card .logo-text {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--purple-primary);
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.login-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.login-form .form-group label {
+    font-weight: 600;
+    color: var(--gray-800);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.login-form .input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.login-form .input-with-icon .icon {
+    position: absolute;
+    left: 16px;
+    font-size: 18px;
+    color: var(--gray-500);
+    z-index: 1;
+}
+
+.login-form .input-with-icon input {
+    width: 100%;
+    padding: 14px 16px 14px 48px;
+    border: 2px solid var(--gray-200);
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: var(--white);
+}
+
+.login-form .input-with-icon input:focus {
+    outline: none;
+    border-color: var(--purple-primary);
+    box-shadow: 0 0 0 3px rgba(123, 79, 163, 0.1);
+}
+
+.login-form .input-with-icon input::placeholder {
+    color: var(--gray-400);
+}
+
+.login-button {
+    width: 100%;
+    background: var(--purple-primary);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+    margin-top: 8px;
+}
+
+.login-button:hover:not(:disabled) {
+    background: var(--purple-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(123, 79, 163, 0.3);
+}
+
+.login-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.signup-link {
+    text-align: center;
+    font-size: 14px;
+    color: var(--gray-600);
+    margin-top: 8px;
+}
+
+.signup-link a {
+    color: var(--purple-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.signup-link a:hover {
+    color: var(--purple-dark);
+    text-decoration: underline;
+}
+
+.login-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+}

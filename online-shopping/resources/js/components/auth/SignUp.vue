@@ -111,7 +111,7 @@ const handleSignup = async () => {
     try {
         await authStore.register(formData.value);
         notify.success('Registration successful!');
-        router.push('/products');
+        router.push('/home');
     } catch (error) {
         const message = error.response?.data?.message || 'Registration failed. Please try again.';
         notify.error(message);
@@ -120,3 +120,7 @@ const handleSignup = async () => {
     }
 };
 </script>
+
+<style scoped>
+@import '../../../css/signup.css';
+</style>

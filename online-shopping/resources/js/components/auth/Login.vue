@@ -73,7 +73,7 @@ const handleLogin = async () => {
         if (authStore.isAdmin) {
             router.push('/admin');
         } else {
-            router.push('/products');
+            router.push('/home');
         }
     } catch (error) {
         notify.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
@@ -82,3 +82,7 @@ const handleLogin = async () => {
     }
 };
 </script>
+
+<style scoped>
+@import '../../../css/login.css';
+</style>

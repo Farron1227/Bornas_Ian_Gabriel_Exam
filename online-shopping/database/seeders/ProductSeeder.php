@@ -15,34 +15,38 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@purplebug.com',
-            'password' => bcrypt('password'),
-            'role' => 'admin',
-            'is_active' => true,
-        ]);
+        // Create admin user if not exists
+        User::firstOrCreate(
+            ['email' => 'admin@purplebug.com'],
+            [
+                'name' => 'Admin User',
+                'password' => bcrypt('password'),
+                'role' => 'admin',
+                'is_active' => true,
+            ]
+        );
 
-        // Create test customer
-        User::create([
-            'name' => 'Juan Dela Cruz',
-            'email' => 'juan.delacruz@gmail.com',
-            'password' => bcrypt('password'),
-            'role' => 'customer',
-            'is_active' => true,
-        ]);
+        // Create test customer if not exists
+        User::firstOrCreate(
+            ['email' => 'juan.delacruz@gmail.com'],
+            [
+                'name' => 'Juan Dela Cruz',
+                'password' => bcrypt('password'),
+                'role' => 'customer',
+                'is_active' => true,
+            ]
+        );
 
         // Create categories
-        $electronics = Category::create([
-            'name' => 'Electronics',
-            'description' => 'Electronic devices and gadgets',
-        ]);
+        $electronics = Category::firstOrCreate(
+            ['name' => 'Electronics'],
+            ['description' => 'Electronic devices and gadgets']
+        );
 
-        $clothing = Category::create([
-            'name' => 'Clothing',
-            'description' => 'Fashion and apparel',
-        ]);
+        $clothing = Category::firstOrCreate(
+            ['name' => 'Clothing'],
+            ['description' => 'Fashion and apparel']
+        );
 
         // Create products
         $products = [

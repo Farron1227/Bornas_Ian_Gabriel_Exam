@@ -25,6 +25,7 @@
     --warning: #f39c12;
     --error: #e74c3c;
     --info: #3498db;
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* ==========================================================================
@@ -45,7 +46,7 @@ html {
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--font-family);
     line-height: 1.6;
     color: var(--gray-800);
     background: var(--white);
@@ -68,6 +69,16 @@ textarea,
 select {
     font-family: inherit;
 }
+
+/* ==========================================================================
+   Container
+========================================================================== */
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
 
 /* ==========================================================================
    LOGIN PAGE STYLES

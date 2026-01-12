@@ -21,10 +21,12 @@ export const useAuthStore = defineStore('auth', {
             this.error = null;
             try {
                 const response = await authAPI.register(data);
-                this.user = response.data.user;
-                this.token = response.data.token;
+                // Handle new API response format with ApiResponse trait
+                const responseData = response.data.data || response.data;
+                this.user = responseData.user;
+                this.token = responseData.token;
                 localStorage.setItem('token', this.token);
-                return response.data;
+                return responseData;
             } catch (error) {
                 this.error = error.response?.data?.message || 'Registration failed';
                 throw error;
@@ -38,10 +40,12 @@ export const useAuthStore = defineStore('auth', {
             this.error = null;
             try {
                 const response = await authAPI.login(credentials);
-                this.user = response.data.user;
-                this.token = response.data.token;
+                // Handle new API response format with ApiResponse trait
+                const responseData = response.data.data || response.data;
+                this.user = responseData.user;
+                this.token = responseData.token;
                 localStorage.setItem('token', this.token);
-                return response.data;
+                return responseData;
             } catch (error) {
                 this.error = error.response?.data?.message || 'Login failed';
                 throw error;
@@ -67,7 +71,8 @@ export const useAuthStore = defineStore('auth', {
             
             try {
                 const response = await authAPI.getUser();
-                this.user = response.data;
+                // Handle new API response format with ApiResponse trait
+                this.user = response.data.data || response.data;
             } catch (error) {
                 console.error('Fetch user error:', error);
                 // If token is invalid, clear it

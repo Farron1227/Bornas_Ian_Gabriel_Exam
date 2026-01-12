@@ -273,7 +273,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/authStore';
 import { useProductStore } from '../../stores/productStore';
 import { useAdminStore } from '../../stores/adminStore';
-import logo from '../../../images/purplebug-logo.svg';
+import logo from '../../../images/purplebug-logo.png';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -501,8 +501,11 @@ const formatStatus = (status) => {
 const handleLogout = async () => {
     await authStore.logout();
     notify.success('Logged out successfully');
-    router.push('/');
+    router.push('/home');
 };
 </script>
 
-                            
+<style scoped>
+@import '../../../css/admin.css';
+@import '../../../css/modals.css';
+</style>

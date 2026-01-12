@@ -20,8 +20,10 @@ export const useCartStore = defineStore('cart', {
             this.error = null;
             try {
                 const response = await cartAPI.getAll();
-                this.items = response.data.items;
-                this.total = response.data.total;
+                // Handle new API response format with ApiResponse trait
+                const responseData = response.data.data || response.data;
+                this.items = responseData.items;
+                this.total = responseData.total;
             } catch (error) {
                 this.error = error.response?.data?.message || 'Failed to fetch cart';
                 throw error;

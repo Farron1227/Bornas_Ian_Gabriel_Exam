@@ -4,15 +4,9 @@
         <header class="header">
             <div class="container">
                 <div class="header-content">
-                    <router-link to="/" class="logo">
+                    <router-link to="/home" class="logo">
                         <img :src="logo" alt="PurpleBug" />
                     </router-link>
-
-                    <nav class="nav">
-                        <router-link to="/" class="nav-link">Home</router-link>
-                        <router-link to="/products" class="nav-link active">Products</router-link>
-                        <router-link to="/about" class="nav-link">About</router-link>
-                    </nav>
 
                     <div class="header-actions">
                         <div class="user-info" v-if="authStore.isAuthenticated">
@@ -24,14 +18,12 @@
                             <span v-if="cartStore.itemCount > 0" class="cart-badge">{{ cartStore.itemCount }}</span>
                         </button>
                         <router-link v-if="authStore.isAuthenticated" to="/login" @click="handleLogout" class="btn-secondary">
-                            🔒 {{ authStore.isAdmin ? 'ADMIN' : 'LOGOUT' }}
+                             {{ authStore.isAdmin ? 'ADMIN' : 'LOGOUT' }}
                         </router-link>
                         <router-link v-else to="/login" class="btn-primary">
-                            🔒 LOGIN
+                             Login
                         </router-link>
-                        <router-link to="/signup" class="btn-signup">
-                            ✏️ SIGN UP
-                        </router-link>
+                        
                     </div>
                 </div>
             </div>
@@ -50,7 +42,7 @@
                             placeholder="Search"
                             class="search-input"
                         />
-                        <button class="search-button">🔍</button>
+                        <button class="search-button"></button>
                     </div>
 
                     <div class="sort-buttons">
@@ -211,6 +203,20 @@
                 </div>
             </div>
         </div>
+
+        <!-- Logout Confirmation Modal -->
+        <div v-if="showLogoutModal" class="modal-overlay" @click="cancelLogout">
+            <div class="modal-content logout-modal" @click.stop>
+                <div class="logout-content">
+                    <h2>Sign Out</h2>
+                    <p>Do you want to sign out and continue?</p>
+                    <div class="logout-buttons">
+                        <button @click="cancelLogout" class="btn-cancel">Cancel</button>
+                        <button @click="confirmLogout" class="btn-confirm">Sign Out</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -221,7 +227,7 @@ import { useCartStore } from '../../stores/cartStore';
 import { useProductStore } from '../../stores/productStore';
 import { useRouter } from 'vue-router';
 import { orderAPI } from '../../services/api';
-import logo from '../../../images/purplebug-logo.svg';
+import logo from '../../../images/purplebug-logo.png';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -234,6 +240,7 @@ const sortOrder = ref('');
 const showProductModal = ref(false);
 const showCartModal = ref(false);
 const showThankYouModal = ref(false);
+const showLogoutModal = ref(false);
 const selectedProduct = ref({});
 const selectedQuantity = ref(1);
 const addingToCart = ref(false);
@@ -334,15 +341,23 @@ const closeThankYou = () => {
 };
 
 const handleLogout = async (e) => {
+    e.preventDefault();
     if (authStore.isAdmin) {
-        e.preventDefault();
         router.push('/admin');
     } else {
-        e.preventDefault();
-        await authStore.logout();
-        notify.success('Logged out successfully');
-        router.push('/');
+        showLogoutModal.value = true;
     }
+};
+
+const confirmLogout = async () => {
+    showLogoutModal.value = false;
+    await authStore.logout();
+    notify.success('Logged out successfully');
+    router.push('/login');
+};
+
+const cancelLogout = () => {
+    showLogoutModal.value = false;
 };
 
 const goToPage = async (page) => {
@@ -366,3 +381,8 @@ const showEllipsis = computed(() => {
     return productStore.pagination.current_page < productStore.pagination.last_page - 2;
 });
 </script>
+
+<style scoped>
+@import '../../../css/products.css';
+@import '../../../css/modals.css';
+</style>
