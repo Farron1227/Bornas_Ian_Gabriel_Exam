@@ -35,8 +35,8 @@
     background:var(--body-color);
     color: var(--text-light);
     height: 100%;
-    min-height: 100vh;
     min-height: -webkit-fill-available;
+    min-height: 100vh;
     text-rendering: optimizeSpeed;
     line-height: 1.5;
     margin: 0;

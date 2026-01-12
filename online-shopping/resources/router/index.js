@@ -1,10 +1,11 @@
 import {createRouter, createWebHistory} from 'vue-router';
 import homeIndex from '../js/components/product/Home.vue';
-import adminDashboard from '../js/components/product/AdminDashboard.vue';
+import adminDashboard from '../js/components/admin/AdminDashboard.vue';
 import loginIndex from '../js/components/auth/Login.vue';
 import signupIndex from '../js/components/auth/SignUp.vue';
 import about from '../js/components/product/About.vue';
 import products from '../js/components/product/Products.vue';
+
 import notFound from '../js/components/notFound.vue';
 
 
