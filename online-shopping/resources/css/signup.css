@@ -6,15 +6,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #ffffff;
     padding: 20px;
+    position: relative;
 }
 
 .signup-container {
     width: 100%;
     display: flex;
     justify-content: center;
-    max-width: 450px;
+    align-items: center;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 900px;
     padding: 20px;
 }
 
@@ -22,9 +28,10 @@
     background: white;
     border-radius: 16px;
     padding: 48px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    border: 2px solid #1a1a1a;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 750px;
+    max-width: 850px;
 }
 
 .signup-card h2 {
@@ -37,6 +44,15 @@
 .signup-card .logo-container {
     text-align: center;
     margin-bottom: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.signup-card .logo-container img {
+    height: 100px;
+    width: auto;
+    max-width: 100%;
 }
 
 .signup-card .logo-text {
@@ -99,23 +115,20 @@
 .signup-form .input-with-icon input,
 .signup-form .form-group input {
     width: 100%;
-    padding: 14px 16px 14px 48px;
-    border: 2px solid var(--gray-200);
+    padding: 18px 16px 18px 48px;
+    border: 2px solid #1a1a1a;
     border-radius: 10px;
-    font-size: 15px;
+    font-size: 16px;
     transition: all 0.3s ease;
     background: var(--white);
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
-    transition: border-color 0.3s;
+    box-sizing: border-box;
 }
 
 .signup-form .input-with-icon input:focus,
 .signup-form .form-group input:focus {
     outline: none;
-    border-color: var(--purple-primary);
-    box-shadow: 0 0 0 3px rgba(123, 79, 163, 0.1);
+    border-color: #1a1a1a;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
 .signup-form .input-with-icon input::placeholder {

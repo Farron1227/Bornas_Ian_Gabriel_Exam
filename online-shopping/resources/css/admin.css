@@ -277,6 +277,77 @@
     color: var(--error);
 }
 
+/* Role Badges */
+.role-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.role-badge.admin {
+    background: rgba(123, 79, 163, 0.15);
+    color: var(--purple-primary);
+}
+
+.role-badge.customer {
+    background: rgba(52, 152, 219, 0.1);
+    color: var(--info);
+}
+
+/* Stock Badges */
+.stock-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.stock-badge.low {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--error);
+}
+
+.stock-badge.normal {
+    background: rgba(39, 174, 96, 0.1);
+    color: var(--success);
+}
+
+/* Loading and Empty States */
+.loading-state,
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gray-500);
+    font-size: 16px;
+}
+
+.loading-state {
+    color: var(--purple-primary);
+    font-weight: 600;
+}
+
+.empty-state {
+    background: white;
+    border-radius: 12px;
+    border: 2px dashed var(--gray-200);
+}
+
+/* Disabled button styles */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+
 /* Admin Modal Styles */
 .admin-modal {
     width: 600px;

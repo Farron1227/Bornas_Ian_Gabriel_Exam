@@ -58,7 +58,7 @@ export const useAuthStore = defineStore('auth', {
             try {
                 await authAPI.logout();
             } catch (error) {
-                console.error('Logout error:', error);
+                // Silently handle logout errors
             } finally {
                 this.user = null;
                 this.token = null;
@@ -74,7 +74,6 @@ export const useAuthStore = defineStore('auth', {
                 // Handle new API response format with ApiResponse trait
                 this.user = response.data.data || response.data;
             } catch (error) {
-                console.error('Fetch user error:', error);
                 // If token is invalid, clear it
                 if (error.response?.status === 401) {
                     this.logout();

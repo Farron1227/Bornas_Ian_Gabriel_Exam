@@ -56,3 +56,6 @@ defineExpose({
 });
 </script>
 
+<style scoped>
+@import '../../css/notifications.css';
+</style>

@@ -17,10 +17,13 @@
                             🛒
                             <span v-if="cartStore.itemCount > 0" class="cart-badge">{{ cartStore.itemCount }}</span>
                         </button>
-                        <router-link v-if="authStore.isAuthenticated" to="/login" @click="handleLogout" class="btn-secondary">
-                             {{ authStore.isAdmin ? 'ADMIN' : 'LOGOUT' }}
-                        </router-link>
-                        <router-link v-else to="/login" class="btn-primary">
+                        <button v-if="authStore.isAuthenticated && authStore.isAdmin" @click="goToAdmin" class="btn-secondary">
+                            ADMIN
+                        </button>
+                        <button v-if="authStore.isAuthenticated && !authStore.isAdmin" @click="handleLogout" class="btn-secondary">
+                            LOGOUT
+                        </button>
+                        <router-link v-if="!authStore.isAuthenticated" to="/login" class="btn-primary">
                              Login
                         </router-link>
                         
@@ -134,14 +137,17 @@
                     <div class="product-modal-info">
                         <h2 class="modal-product-name">{{ selectedProduct.name }}</h2>
                         <p class="modal-product-price">₱{{ parseFloat(selectedProduct.price).toFixed(2) }}</p>
-                        <div class="quantity-section">
+                        <div class="stock-info" :class="{ 'out-of-stock': selectedProduct.stock === 0 }">
+                            {{ selectedProduct.stock > 0 ? `${selectedProduct.stock} in stock` : 'Out of Stock' }}
+                        </div>
+                        <div class="quantity-section" v-if="selectedProduct.stock > 0">
                             <label>Quantity</label>
                             <select v-model="selectedQuantity" class="quantity-select">
-                                <option v-for="n in Math.min(selectedProduct.stock, 10)" :key="n" :value="n">{{ n }}</option>
+                                <option v-for="n in Math.min(availableStock, 10)" :key="n" :value="n">{{ n }}</option>
                             </select>
                         </div>
-                        <button @click="addToCart" class="add-to-cart-btn" :disabled="addingToCart">
-                            {{ addingToCart ? 'Adding...' : 'Add To Cart' }}
+                        <button @click="addToCart" class="add-to-cart-btn" :disabled="addingToCart || selectedProduct.stock === 0">
+                            {{ selectedProduct.stock === 0 ? 'Out of Stock' : (addingToCart ? 'Adding...' : 'Add To Cart') }}
                         </button>
                     </div>
                 </div>
@@ -204,6 +210,22 @@
             </div>
         </div>
 
+        <!-- Add to Cart Confirmation Modal -->
+        <div v-if="showConfirmModal" class="modal-overlay" @click="cancelAddToCart">
+            <div class="modal-content confirm-modal" @click.stop>
+                <div class="confirm-content">
+                    <h2>Add to Cart</h2>
+                    <p>Add <strong>{{ selectedQuantity }}</strong> x <strong>{{ selectedProduct?.name }}</strong> to your cart?</p>
+                    <div class="confirm-buttons">
+                        <button @click="cancelAddToCart" class="btn-cancel">Cancel</button>
+                        <button @click="confirmAddToCart" class="btn-confirm" :disabled="addingToCart">
+                            {{ addingToCart ? 'Adding...' : 'Confirm' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Logout Confirmation Modal -->
         <div v-if="showLogoutModal" class="modal-overlay" @click="cancelLogout">
             <div class="modal-content logout-modal" @click.stop>
@@ -241,6 +263,7 @@ const showProductModal = ref(false);
 const showCartModal = ref(false);
 const showThankYouModal = ref(false);
 const showLogoutModal = ref(false);
+const showConfirmModal = ref(false);
 const selectedProduct = ref({});
 const selectedQuantity = ref(1);
 const addingToCart = ref(false);
@@ -265,7 +288,20 @@ const setSortOrder = (order) => {
 
 const openProductModal = (product) => {
     selectedProduct.value = product;
-    selectedQuantity.value = 1;
+    
+    // Check if product is already in cart
+    const existingCartItem = cartStore.items.find(item => item.product_id === product.id);
+    
+    if (existingCartItem) {
+        // Calculate remaining stock after what's already in cart
+        const remainingStock = Math.max(0, product.stock - existingCartItem.quantity);
+        if (remainingStock > 0) {
+            selectedQuantity.value = 1;
+        }
+    } else {
+        selectedQuantity.value = 1;
+    }
+    
     showProductModal.value = true;
 };
 
@@ -273,23 +309,44 @@ const closeProductModal = () => {
     showProductModal.value = false;
 };
 
-const addToCart = async () => {
+const addToCart = () => {
     if (!authStore.isAuthenticated) {
         notify.error('Please login to add items to cart');
         router.push('/login');
         return;
     }
 
+    // Check if product is out of stock
+    if (selectedProduct.value.stock === 0) {
+        notify.error('This product is out of stock');
+        return;
+    }
+
+    // Check if there's available stock considering what's already in cart
+    if (availableStock.value === 0) {
+        notify.error('No more stock available for this product');
+        return;
+    }
+
+    showConfirmModal.value = true;
+};
+
+const confirmAddToCart = async () => {
     addingToCart.value = true;
     try {
         await cartStore.addToCart(selectedProduct.value.id, selectedQuantity.value);
         notify.success('Item added to cart!');
+        showConfirmModal.value = false;
         closeProductModal();
     } catch (error) {
         notify.error(error.response?.data?.message || 'Failed to add to cart');
     } finally {
         addingToCart.value = false;
     }
+};
+
+const cancelAddToCart = () => {
+    showConfirmModal.value = false;
 };
 
 const toggleCart = async () => {
@@ -340,12 +397,19 @@ const closeThankYou = () => {
     showThankYouModal.value = false;
 };
 
-const handleLogout = async (e) => {
-    e.preventDefault();
+const handleLogout = async () => {
+    // Only guests/customers can logout from this button
+    if (!authStore.isAdmin) {
+        showLogoutModal.value = true;
+    }
+};
+
+const goToAdmin = () => {
+    // Only admins can access admin dashboard
     if (authStore.isAdmin) {
         router.push('/admin');
     } else {
-        showLogoutModal.value = true;
+        notify.error('You do not have permission to access the admin panel');
     }
 };
 
@@ -364,6 +428,15 @@ const goToPage = async (page) => {
     productStore.setPage(page);
     await productStore.fetchProducts();
 };
+
+const availableStock = computed(() => {
+    if (!selectedProduct.value || !selectedProduct.value.id) return 0;
+    
+    const existingCartItem = cartStore.items.find(item => item.product_id === selectedProduct.value.id);
+    const currentInCart = existingCartItem ? existingCartItem.quantity : 0;
+    
+    return Math.max(0, selectedProduct.value.stock - currentInCart);
+});
 
 const displayedPages = computed(() => {
     const current = productStore.pagination.current_page;

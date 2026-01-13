@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -59,15 +59,43 @@ class AuthController extends Controller
                 'password' => 'required',
             ]);
 
-            $user = User::where('email', $validated['email'])->first();
+            $email = $validated['email'];
+            $lockKey = 'login_locked_' . $email;
+            $attemptsKey = 'login_attempts_' . $email;
+
+            // Check if email is locked
+            if (Cache::has($lockKey)) {
+                $remainingTime = Cache::get($lockKey) - now()->timestamp;
+                $minutes = ceil($remainingTime / 60);
+                return $this->errorResponse("Too many failed attempts. Please try again in {$minutes} minute(s).", 429);
+            }
+
+            $user = User::where('email', $email)->first();
 
             if (!$user || !Hash::check($validated['password'], $user->password)) {
-                return $this->errorResponse('The provided credentials are incorrect', 401);
+                // Increment failed attempts
+                $attempts = Cache::get($attemptsKey, 0) + 1;
+                Cache::put($attemptsKey, $attempts, now()->addMinutes(15));
+
+                // Lock account after 5 failed attempts
+                if ($attempts >= 5) {
+                    $lockUntil = now()->addMinutes(5)->timestamp;
+                    Cache::put($lockKey, $lockUntil, now()->addMinutes(5));
+                    Cache::forget($attemptsKey);
+                    return $this->errorResponse('Too many failed attempts. Your account has been locked for 5 minutes.', 429);
+                }
+
+                $remainingAttempts = 5 - $attempts;
+                return $this->errorResponse("Invalid login credentials. {$remainingAttempts} attempt(s) remaining.", 401);
             }
 
             if (!$user->is_active) {
-                return $this->errorResponse('Your account has been deactivated', 403);
+                return $this->errorResponse('Unable to access account', 403);
             }
+
+            // Clear failed attempts on successful login
+            Cache::forget($attemptsKey);
+            Cache::forget($lockKey);
 
             $token = $user->createToken('auth_token')->plainTextToken;
 

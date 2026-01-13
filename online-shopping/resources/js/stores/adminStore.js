@@ -15,7 +15,8 @@ export const useAdminStore = defineStore('admin', {
             this.error = null;
             try {
                 const response = await orderAPI.adminGetAll();
-                this.orders = response.data;
+                // Handle new API response format with ApiResponse trait
+                this.orders = response.data.data || response.data;
             } catch (error) {
                 this.error = error.response?.data?.message || 'Failed to fetch orders';
                 throw error;
@@ -57,7 +58,8 @@ export const useAdminStore = defineStore('admin', {
             this.error = null;
             try {
                 const response = await userAPI.getAll();
-                this.users = response.data;
+                // Handle new API response format with ApiResponse trait
+                this.users = response.data.data || response.data;
             } catch (error) {
                 this.error = error.response?.data?.message || 'Failed to fetch users';
                 throw error;

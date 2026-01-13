@@ -33,7 +33,7 @@
             <div class="sidebar-footer">
                 <div class="user-profile">
                     <span class="user-avatar">👤</span>
-                    <span class="user-name">Hi, Admin!</span>
+                    <span class="user-name">Hi, {{ authStore.currentUser?.name?.split(' ')[0] || 'Admin' }}!</span>
                 </div>
                 <button @click="handleLogout" class="logout-btn">🚪</button>
             </div>
@@ -48,11 +48,20 @@
                     <button @click="openProductForm()" class="add-btn">Add Product</button>
                 </div>
 
-                <div class="table-container">
+                <div v-if="productStore.loading" class="loading-state">
+                    Loading products...
+                </div>
+
+                <div v-else-if="productStore.products.length === 0" class="empty-state">
+                    No products found. Click "Add Product" to create one.
+                </div>
+
+                <div v-else class="table-container">
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Product Name</th>
+                                <th>Category</th>
                                 <th>Price</th>
                                 <th>Number of Stocks</th>
                                 <th>Action</th>
@@ -61,8 +70,13 @@
                         <tbody>
                             <tr v-for="product in productStore.products" :key="product.id">
                                 <td>{{ product.name }}</td>
+                                <td>{{ product.category?.name || 'N/A' }}</td>
                                 <td>₱ {{ parseFloat(product.price).toFixed(2) }}</td>
-                                <td>{{ product.stock }}</td>
+                                <td>
+                                    <span :class="['stock-badge', product.stock < 10 ? 'low' : 'normal']">
+                                        {{ product.stock }}
+                                    </span>
+                                </td>
                                 <td class="action-btns">
                                     <button @click="openProductForm(product)" class="edit-btn">✏️</button>
                                     <button @click="deleteProduct(product.id)" class="delete-btn">🗑️</button>
@@ -79,25 +93,39 @@
                     <h1>Orders</h1>
                 </div>
 
-                <div class="table-container">
+                <div v-if="adminStore.loading" class="loading-state">
+                    Loading orders...
+                </div>
+
+                <div v-else-if="adminStore.orders.length === 0" class="empty-state">
+                    No orders found.
+                </div>
+
+                <div v-else class="table-container">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Full Name</th>
-                                <th>Product</th>
+                                <th>Order ID</th>
+                                <th>Customer Name</th>
+                                <th>Products</th>
+                                <th>Total Amount</th>
                                 <th>Status</th>
+                                <th>Date</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="order in adminStore.orders" :key="order.id">
+                                <td>#{{ order.id }}</td>
                                 <td>{{ order.user?.name || 'N/A' }}</td>
                                 <td>{{ getOrderProducts(order) }}</td>
+                                <td>₱ {{ parseFloat(order.total).toFixed(2) }}</td>
                                 <td>
                                     <span :class="['status-badge', order.status]">
                                         {{ formatStatus(order.status) }}
                                     </span>
                                 </td>
+                                <td>{{ formatDate(order.created_at) }}</td>
                                 <td class="action-btns">
                                     <button @click="viewOrder(order)" class="view-btn">👁️</button>
                                     <button @click="deleteOrder(order.id)" class="delete-btn">🗑️</button>
@@ -115,13 +143,23 @@
                     <button @click="openUserForm()" class="add-btn">Add User</button>
                 </div>
 
-                <div class="table-container">
+                <div v-if="adminStore.loading" class="loading-state">
+                    Loading users...
+                </div>
+
+                <div v-else-if="adminStore.users.length === 0" class="empty-state">
+                    No users found.
+                </div>
+
+                <div v-else class="table-container">
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Full Name</th>
                                 <th>Email</th>
+                                <th>Role</th>
                                 <th>Status</th>
+                                <th>Joined Date</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -130,13 +168,25 @@
                                 <td>{{ user.name }}</td>
                                 <td>{{ user.email }}</td>
                                 <td>
+                                    <span :class="['role-badge', user.role]">
+                                        {{ user.role === 'admin' ? 'Admin' : 'Customer' }}
+                                    </span>
+                                </td>
+                                <td>
                                     <span :class="['status-badge', user.is_active ? 'active' : 'inactive']">
                                         {{ user.is_active ? 'Active' : 'Inactive' }}
                                     </span>
                                 </td>
+                                <td>{{ formatDate(user.created_at) }}</td>
                                 <td class="action-btns">
                                     <button @click="openUserForm(user)" class="edit-btn">✏️</button>
-                                    <button @click="deleteUser(user.id)" class="delete-btn">🗑️</button>
+                                    <button 
+                                        @click="deleteUser(user.id)" 
+                                        class="delete-btn"
+                                        :disabled="user.id === authStore.currentUser?.id"
+                                    >
+                                        🗑️
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
@@ -211,7 +261,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Password</label>
+                            <label>Password {{ editingUser ? '(Leave blank to keep current)' : '' }}</label>
                             <div class="input-with-icon">
                                 <span class="icon">🔒</span>
                                 <input type="password" v-model="userForm.password" :required="!editingUser" />
@@ -221,8 +271,22 @@
                             <label>Confirm Password</label>
                             <div class="input-with-icon">
                                 <span class="icon">🔒</span>
-                                <input type="password" v-model="userForm.password_confirmation" :required="!editingUser" />
+                                <input type="password" v-model="userForm.password_confirmation" :required="!editingUser && userForm.password" />
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select v-model="userForm.role" required>
+                                <option value="customer">Customer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select v-model="userForm.is_active" required>
+                                <option :value="true">Active</option>
+                                <option :value="false">Inactive</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -241,12 +305,32 @@
                 </div>
                 <div class="modal-body order-details">
                     <div class="form-group">
-                        <label>Full Name</label>
+                        <label>Order ID</label>
+                        <input type="text" :value="'#' + (selectedOrder?.id || '')" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label>Customer Name</label>
                         <input type="text" :value="selectedOrder?.user?.name" readonly />
                     </div>
                     <div class="form-group">
-                        <label>Product Ordered</label>
-                        <input type="text" :value="getOrderProducts(selectedOrder)" readonly />
+                        <label>Customer Email</label>
+                        <input type="text" :value="selectedOrder?.user?.email" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label>Products Ordered</label>
+                        <textarea :value="getOrderProductsDetailed(selectedOrder)" readonly rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Total Quantity</label>
+                        <input type="text" :value="getTotalQuantity(selectedOrder)" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label>Total Amount</label>
+                        <input type="text" :value="'₱ ' + parseFloat(selectedOrder?.total || 0).toFixed(2)" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label>Order Date</label>
+                        <input type="text" :value="formatDate(selectedOrder?.created_at)" readonly />
                     </div>
                     <div class="form-group">
                         <label>Status</label>
@@ -256,10 +340,6 @@
                             <option value="delivered">Delivered</option>
                             <option value="canceled">Canceled</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Quantity</label>
-                        <input type="text" :value="getTotalQuantity(selectedOrder)" readonly />
                     </div>
                 </div>
             </div>
@@ -301,7 +381,9 @@ const userForm = ref({
     name: '',
     email: '',
     password: '',
-    password_confirmation: ''
+    password_confirmation: '',
+    role: 'customer',
+    is_active: true
 });
 
 // Order View
@@ -312,6 +394,13 @@ const orderStatusForm = ref({
 });
 
 onMounted(async () => {
+    // Verify user is admin before loading data
+    if (!authStore.isAdmin) {
+        notify.error('Access denied. Admin privileges required.');
+        router.push('/home');
+        return;
+    }
+
     await productStore.fetchProducts();
     await adminStore.fetchOrders();
     await adminStore.fetchUsers();
@@ -395,14 +484,18 @@ const openUserForm = (user = null) => {
             name: user.name,
             email: user.email,
             password: '',
-            password_confirmation: ''
+            password_confirmation: '',
+            role: user.role || 'customer',
+            is_active: user.is_active
         };
     } else {
         userForm.value = {
             name: '',
             email: '',
             password: '',
-            password_confirmation: ''
+            password_confirmation: '',
+            role: 'customer',
+            is_active: true
         };
     }
     showUserForm.value = true;
@@ -414,17 +507,42 @@ const closeUserForm = () => {
 };
 
 const saveUser = async () => {
-    if (userForm.value.password !== userForm.value.password_confirmation) {
+    // Validate passwords if provided
+    if (userForm.value.password && userForm.value.password !== userForm.value.password_confirmation) {
         notify.error('Passwords do not match');
         return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userForm.value.email)) {
+        notify.error('Please enter a valid email address');
+        return;
+    }
+
     try {
+        const userData = {
+            name: userForm.value.name,
+            email: userForm.value.email,
+            role: userForm.value.role,
+            is_active: userForm.value.is_active
+        };
+
+        // Only include password if it's provided
+        if (userForm.value.password) {
+            userData.password = userForm.value.password;
+            userData.password_confirmation = userForm.value.password_confirmation;
+        }
+
         if (editingUser.value) {
-            await adminStore.updateUser(editingUser.value.id, userForm.value);
+            await adminStore.updateUser(editingUser.value.id, userData);
             notify.success('User updated successfully');
         } else {
-            await adminStore.createUser(userForm.value);
+            if (!userForm.value.password) {
+                notify.error('Password is required for new users');
+                return;
+            }
+            await adminStore.createUser(userData);
             notify.success('User created successfully');
         }
         closeUserForm();
@@ -480,7 +598,17 @@ const deleteOrder = async (id) => {
 // Utility Functions
 const getOrderProducts = (order) => {
     if (!order?.items || order.items.length === 0) return 'N/A';
-    return order.items.map(item => item.product?.name || 'Unknown').join(', ');
+    const products = order.items.map(item => item.product?.name || 'Unknown');
+    return products.length > 2 
+        ? `${products.slice(0, 2).join(', ')}... (+${products.length - 2} more)` 
+        : products.join(', ');
+};
+
+const getOrderProductsDetailed = (order) => {
+    if (!order?.items || order.items.length === 0) return 'No items';
+    return order.items.map(item => 
+        `${item.product?.name || 'Unknown'} (Qty: ${item.quantity}, Price: ₱${parseFloat(item.price).toFixed(2)})`
+    ).join('\n');
 };
 
 const getTotalQuantity = (order) => {
@@ -498,10 +626,26 @@ const formatStatus = (status) => {
     return statusMap[status] || status;
 };
 
+const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
 const handleLogout = async () => {
-    await authStore.logout();
-    notify.success('Logged out successfully');
-    router.push('/home');
+    try {
+        await authStore.logout();
+        notify.success('Logged out successfully');
+        router.push('/login');
+    } catch (error) {
+        notify.error('Logout failed');
+    }
 };
 </script>
 

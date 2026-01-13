@@ -2,7 +2,7 @@
     <div class="login-page">
         <div class="login-card">
             <div class="logo-container">
-                <h1 class="logo-text">PurpleBug®</h1>
+                <img :src="logo" alt="PurpleBug" />
             </div>
 
             <form @submit.prevent="handleLogin" class="login-form">
@@ -51,6 +51,7 @@
 import { ref, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/authStore';
+import logo from '../../../images/purplebug-logo.png';
 
 const router = useRouter();
 const authStore = useAuthStore();
