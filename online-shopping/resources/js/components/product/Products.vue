@@ -224,7 +224,7 @@
                         <img :src="logo" alt="PurpleBug" />
                     </div>
                     <div class="thankyou-illustration">
-                        👩‍💼🛍️
+                        <img :src="shoppingSuccess" alt="Shopping Success" />
                     </div>
                     <p class="thankyou-message">Thank you for shopping with us.</p>
                     <button @click="closeThankYou" class="close-btn">×</button>
@@ -299,6 +299,7 @@ import { orderAPI } from '../../services/api';
 import logo from '../../../images/purplebug-logo.png';
 import productPlaceholder from '../../../images/product-placeholder.svg';
 import productPlaceholderSmall from '../../../images/product-placeholder-small.svg';
+import shoppingSuccess from '../../../images/thankyou-modal.png';
 
 const router = useRouter();
 const route = useRoute();
