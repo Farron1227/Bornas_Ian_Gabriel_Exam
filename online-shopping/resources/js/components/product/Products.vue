@@ -243,15 +243,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue';
+import { ref, computed, onMounted, inject, watch } from 'vue';
 import { useAuthStore } from '../../stores/authStore';
 import { useCartStore } from '../../stores/cartStore';
 import { useProductStore } from '../../stores/productStore';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { orderAPI } from '../../services/api';
 import logo from '../../../images/purplebug-logo.png';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const cartStore = useCartStore();
 const productStore = useProductStore();
@@ -272,6 +273,16 @@ onMounted(async () => {
     await productStore.fetchProducts();
     if (authStore.isAuthenticated) {
         await cartStore.fetchCart();
+    }
+});
+
+// Watch for route changes to refresh products when navigating back from admin
+watch(() => route.path, async (newPath) => {
+    if (newPath === '/home') {
+        await productStore.fetchProducts();
+        if (authStore.isAuthenticated) {
+            await cartStore.fetchCart();
+        }
     }
 });
 

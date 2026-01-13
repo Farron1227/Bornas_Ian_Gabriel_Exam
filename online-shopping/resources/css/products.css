@@ -34,7 +34,7 @@
 }
 
 .logo img {
-    height: 48px;
+    height: 70px;
     width: auto;
     display: block;
     object-fit: contain;
@@ -433,7 +433,7 @@
 }
 
 .footer-logo img {
-    height: 48px;
+    height: 70px;
     width: auto;
     object-fit: contain;
 }
@@ -469,7 +469,7 @@
     }
     
     .logo img {
-        height: 40px;
+        height: 56px;
     }
     
     .search-box {
