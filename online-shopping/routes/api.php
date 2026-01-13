@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CategoryController;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -14,6 +15,9 @@ Route::post('/login', [AuthController::class, 'login']);
 // Public product routes
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
+
+// Public category routes
+Route::get('/categories', [CategoryController::class, 'index']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {

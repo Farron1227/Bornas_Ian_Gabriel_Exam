@@ -60,6 +60,7 @@
                     <table class="data-table">
                         <thead>
                             <tr>
+                                <th>Image</th>
                                 <th>Product Name</th>
                                 <th>Category</th>
                                 <th>Price</th>
@@ -69,6 +70,12 @@
                         </thead>
                         <tbody>
                             <tr v-for="product in productStore.products" :key="product.id">
+                                <td>
+                                    <div class="product-thumbnail">
+                                        <img v-if="product.image" :src="`/storage/${product.image}`" :alt="product.name" />
+                                        <div v-else class="no-image">📦</div>
+                                    </div>
+                                </td>
                                 <td>{{ product.name }}</td>
                                 <td>{{ product.category?.name || 'N/A' }}</td>
                                 <td>₱ {{ parseFloat(product.price).toFixed(2) }}</td>
@@ -209,24 +216,38 @@
                     <div class="form-row">
                         <div class="form-group image-upload">
                             <label>Product Image</label>
-                            <div class="image-preview">
+                            <div class="image-preview" :class="{ 'error': productErrors.image }">
                                 <img v-if="imagePreview" :src="imagePreview" alt="Preview" />
                                 <div v-else class="placeholder">📷</div>
                             </div>
                             <input type="file" @change="handleImageChange" accept="image/*" />
+                            <span v-if="productErrors.image" class="error-message">{{ productErrors.image }}</span>
                         </div>
                         <div class="form-fields">
                             <div class="form-group">
-                                <label>Price</label>
-                                <input type="number" v-model="productForm.price" placeholder="₱" step="0.01" required />
+                                <label>Product Name</label>
+                                <input type="text" v-model="productForm.name" :class="{ 'error': productErrors.name }" />
+                                <span v-if="productErrors.name" class="error-message">{{ productErrors.name }}</span>
                             </div>
                             <div class="form-group">
-                                <label>Product Name</label>
-                                <input type="text" v-model="productForm.name" required />
+                                <label>Category</label>
+                                <select v-model="productForm.category_id" :class="{ 'error': productErrors.category_id }">
+                                    <option value="">Select Category</option>
+                                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                                        {{ category.name }}
+                                    </option>
+                                </select>
+                                <span v-if="productErrors.category_id" class="error-message">{{ productErrors.category_id }}</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Price</label>
+                                <input type="number" v-model="productForm.price" placeholder="₱" step="0.01" :class="{ 'error': productErrors.price }" />
+                                <span v-if="productErrors.price" class="error-message">{{ productErrors.price }}</span>
                             </div>
                             <div class="form-group">
                                 <label>Number of Stocks</label>
-                                <input type="number" v-model="productForm.stock" required />
+                                <input type="number" v-model="productForm.stock" :class="{ 'error': productErrors.stock }" />
+                                <span v-if="productErrors.stock" class="error-message">{{ productErrors.stock }}</span>
                             </div>
                         </div>
                     </div>
@@ -250,29 +271,33 @@
                             <label>Full Name</label>
                             <div class="input-with-icon">
                                 <span class="icon">👤</span>
-                                <input type="text" v-model="userForm.name" required />
+                                <input type="text" v-model="userForm.name" :class="{ 'error': userErrors.name }" />
                             </div>
+                            <span v-if="userErrors.name" class="error-message">{{ userErrors.name }}</span>
                         </div>
                         <div class="form-group">
                             <label>Email</label>
                             <div class="input-with-icon">
                                 <span class="icon">@</span>
-                                <input type="email" v-model="userForm.email" required />
+                                <input type="email" v-model="userForm.email" :class="{ 'error': userErrors.email }" />
                             </div>
+                            <span v-if="userErrors.email" class="error-message">{{ userErrors.email }}</span>
                         </div>
                         <div class="form-group">
                             <label>Password {{ editingUser ? '(Leave blank to keep current)' : '' }}</label>
                             <div class="input-with-icon">
                                 <span class="icon">🔒</span>
-                                <input type="password" v-model="userForm.password" :required="!editingUser" />
+                                <input type="password" v-model="userForm.password" :class="{ 'error': userErrors.password }" />
                             </div>
+                            <span v-if="userErrors.password" class="error-message">{{ userErrors.password }}</span>
                         </div>
                         <div class="form-group">
                             <label>Confirm Password</label>
                             <div class="input-with-icon">
                                 <span class="icon">🔒</span>
-                                <input type="password" v-model="userForm.password_confirmation" :required="!editingUser && userForm.password" />
+                                <input type="password" v-model="userForm.password_confirmation" :class="{ 'error': userErrors.password_confirmation }" />
                             </div>
+                            <span v-if="userErrors.password_confirmation" class="error-message">{{ userErrors.password_confirmation }}</span>
                         </div>
                         <div class="form-group">
                             <label>Role</label>
@@ -344,6 +369,20 @@
                 </div>
             </div>
         </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
+            <div class="modal-content delete-modal" @click.stop>
+                <div class="delete-icon">⚠️</div>
+                <h2>Confirm Deletion</h2>
+                <p class="delete-message">{{ deleteModalData.message }}</p>
+                <p class="delete-warning">This action cannot be undone.</p>
+                <div class="delete-actions">
+                    <button @click="confirmDelete" class="confirm-delete-btn">Delete</button>
+                    <button @click="closeDeleteModal" class="cancel-delete-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -353,6 +392,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/authStore';
 import { useProductStore } from '../../stores/productStore';
 import { useAdminStore } from '../../stores/adminStore';
+import { categoryAPI } from '../../services/api';
 import logo from '../../../images/purplebug-logo.png';
 
 const router = useRouter();
@@ -362,17 +402,21 @@ const adminStore = useAdminStore();
 const notify = inject('notify');
 
 const currentView = ref('products');
+const categories = ref([]);
 
 // Product Form
 const showProductForm = ref(false);
 const editingProduct = ref(null);
 const productForm = ref({
     name: '',
+    category_id: '',
     price: '',
     stock: '',
-    image: null
+    image: null,
+    existingImage: ''
 });
 const imagePreview = ref('');
+const productErrors = ref({});
 
 // User Form
 const showUserForm = ref(false);
@@ -385,12 +429,22 @@ const userForm = ref({
     role: 'customer',
     is_active: true
 });
+const userErrors = ref({});
 
 // Order View
 const showOrderView = ref(false);
 const selectedOrder = ref(null);
 const orderStatusForm = ref({
     status: ''
+});
+
+// Delete Confirmation Modal
+const showDeleteModal = ref(false);
+const deleteModalData = ref({
+    type: '', // 'product', 'user', or 'order'
+    id: null,
+    name: '',
+    message: ''
 });
 
 onMounted(async () => {
@@ -404,6 +458,14 @@ onMounted(async () => {
     await productStore.fetchProducts();
     await adminStore.fetchOrders();
     await adminStore.fetchUsers();
+    
+    // Fetch categories
+    try {
+        const response = await categoryAPI.getAll();
+        categories.value = response.data.data || response.data;
+    } catch (error) {
+        console.error('Failed to fetch categories:', error);
+    }
 });
 
 // Product Functions
@@ -412,13 +474,15 @@ const openProductForm = (product = null) => {
     if (product) {
         productForm.value = {
             name: product.name,
+            category_id: product.category_id,
             price: product.price,
             stock: product.stock,
-            image: null
+            image: null,
+            existingImage: product.image || ''
         };
         imagePreview.value = product.image ? `/storage/${product.image}` : '';
     } else {
-        productForm.value = { name: '', price: '', stock: '', image: null };
+        productForm.value = { name: '', category_id: '', price: '', stock: '', image: null, existingImage: '' };
         imagePreview.value = '';
     }
     showProductForm.value = true;
@@ -428,6 +492,43 @@ const closeProductForm = () => {
     showProductForm.value = false;
     editingProduct.value = null;
     imagePreview.value = '';
+    productErrors.value = {};
+};
+
+const validateProductForm = () => {
+    productErrors.value = {};
+    
+    if (!productForm.value.name || productForm.value.name.trim() === '') {
+        productErrors.value.name = 'Product name is required';
+    } else if (productForm.value.name.length > 255) {
+        productErrors.value.name = 'Product name must not exceed 255 characters';
+    }
+    
+    if (!productForm.value.category_id) {
+        productErrors.value.category_id = 'Category is required';
+    }
+    
+    if (!productForm.value.price || productForm.value.price === '') {
+        productErrors.value.price = 'Price is required';
+    } else if (parseFloat(productForm.value.price) < 0) {
+        productErrors.value.price = 'Price must be a positive number';
+    } else if (parseFloat(productForm.value.price) === 0) {
+        productErrors.value.price = 'Price must be greater than zero';
+    }
+    
+    if (!productForm.value.stock && productForm.value.stock !== 0) {
+        productErrors.value.stock = 'Stock quantity is required';
+    } else if (parseInt(productForm.value.stock) < 0) {
+        productErrors.value.stock = 'Stock must be a positive number';
+    } else if (!Number.isInteger(parseFloat(productForm.value.stock))) {
+        productErrors.value.stock = 'Stock must be a whole number';
+    }
+    
+    if (!editingProduct.value && !productForm.value.image) {
+        productErrors.value.image = 'Product image is required';
+    }
+    
+    return Object.keys(productErrors.value).length === 0;
 };
 
 const handleImageChange = (event) => {
@@ -443,9 +544,15 @@ const handleImageChange = (event) => {
 };
 
 const saveProduct = async () => {
+    if (!validateProductForm()) {
+        notify.error('Please fix the errors before saving');
+        return;
+    }
+    
     try {
         const formData = new FormData();
-        formData.append('name', productForm.value.name);
+        formData.append('name', productForm.value.name.trim());
+        formData.append('category_id', productForm.value.category_id);
         formData.append('price', productForm.value.price);
         formData.append('stock', productForm.value.stock);
         if (productForm.value.image) {
@@ -466,14 +573,16 @@ const saveProduct = async () => {
 };
 
 const deleteProduct = async (id) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-        try {
-            await productStore.deleteProduct(id);
-            notify.success('Product deleted successfully');
-        } catch (error) {
-            notify.error('Failed to delete product');
-        }
-    }
+    const product = productStore.products.find(p => p.id === id);
+    const productName = product ? product.name : 'this product';
+    
+    deleteModalData.value = {
+        type: 'product',
+        id: id,
+        name: productName,
+        message: `Are you sure you want to delete "${productName}"?`
+    };
+    showDeleteModal.value = true;
 };
 
 // User Functions
@@ -504,26 +613,54 @@ const openUserForm = (user = null) => {
 const closeUserForm = () => {
     showUserForm.value = false;
     editingUser.value = null;
+    userErrors.value = {};
+};
+
+const validateUserForm = () => {
+    userErrors.value = {};
+    
+    if (!userForm.value.name || userForm.value.name.trim() === '') {
+        userErrors.value.name = 'Full name is required';
+    } else if (userForm.value.name.length < 3) {
+        userErrors.value.name = 'Full name must be at least 3 characters';
+    } else if (userForm.value.name.length > 255) {
+        userErrors.value.name = 'Full name must not exceed 255 characters';
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!userForm.value.email || userForm.value.email.trim() === '') {
+        userErrors.value.email = 'Email is required';
+    } else if (!emailRegex.test(userForm.value.email)) {
+        userErrors.value.email = 'Please enter a valid email address';
+    }
+    
+    if (!editingUser.value && !userForm.value.password) {
+        userErrors.value.password = 'Password is required for new users';
+    } else if (userForm.value.password) {
+        if (userForm.value.password.length < 6) {
+            userErrors.value.password = 'Password must be at least 6 characters';
+        } else if (userForm.value.password !== userForm.value.password_confirmation) {
+            userErrors.value.password_confirmation = 'Passwords do not match';
+        }
+    }
+    
+    if (!userForm.value.role) {
+        userErrors.value.role = 'Role is required';
+    }
+    
+    return Object.keys(userErrors.value).length === 0;
 };
 
 const saveUser = async () => {
-    // Validate passwords if provided
-    if (userForm.value.password && userForm.value.password !== userForm.value.password_confirmation) {
-        notify.error('Passwords do not match');
-        return;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(userForm.value.email)) {
-        notify.error('Please enter a valid email address');
+    if (!validateUserForm()) {
+        notify.error('Please fix the errors before saving');
         return;
     }
 
     try {
         const userData = {
-            name: userForm.value.name,
-            email: userForm.value.email,
+            name: userForm.value.name.trim(),
+            email: userForm.value.email.trim(),
             role: userForm.value.role,
             is_active: userForm.value.is_active
         };
@@ -538,10 +675,6 @@ const saveUser = async () => {
             await adminStore.updateUser(editingUser.value.id, userData);
             notify.success('User updated successfully');
         } else {
-            if (!userForm.value.password) {
-                notify.error('Password is required for new users');
-                return;
-            }
             await adminStore.createUser(userData);
             notify.success('User created successfully');
         }
@@ -552,14 +685,16 @@ const saveUser = async () => {
 };
 
 const deleteUser = async (id) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-        try {
-            await adminStore.deleteUser(id);
-            notify.success('User deleted successfully');
-        } catch (error) {
-            notify.error(error.response?.data?.message || 'Failed to delete user');
-        }
-    }
+    const user = adminStore.users.find(u => u.id === id);
+    const userName = user ? user.name : 'this user';
+    
+    deleteModalData.value = {
+        type: 'user',
+        id: id,
+        name: userName,
+        message: `Are you sure you want to delete "${userName}"? This will permanently remove the user and all associated data.`
+    };
+    showDeleteModal.value = true;
 };
 
 // Order Functions
@@ -575,23 +710,62 @@ const closeOrderView = () => {
 };
 
 const saveOrderStatus = async () => {
+    if (!orderStatusForm.value.status) {
+        notify.error('Please select a status');
+        return;
+    }
+    
+    if (orderStatusForm.value.status === selectedOrder.value.status) {
+        notify.error('Status is unchanged. Please select a different status.');
+        return;
+    }
+    
     try {
         await adminStore.updateOrderStatus(selectedOrder.value.id, orderStatusForm.value.status);
         notify.success('Order status updated successfully');
         closeOrderView();
     } catch (error) {
-        notify.error('Failed to update order status');
+        notify.error(error.response?.data?.message || 'Failed to update order status');
     }
 };
 
 const deleteOrder = async (id) => {
-    if (confirm('Are you sure you want to delete this order?')) {
-        try {
+    const order = adminStore.orders.find(o => o.id === id);
+    const orderInfo = order ? `Order #${order.id}` : 'this order';
+    
+    deleteModalData.value = {
+        type: 'order',
+        id: id,
+        name: orderInfo,
+        message: `Are you sure you want to delete ${orderInfo}? This will permanently remove the order from the system.`
+    };
+    showDeleteModal.value = true;
+};
+
+const closeDeleteModal = () => {
+    showDeleteModal.value = false;
+    deleteModalData.value = { type: '', id: null, name: '', message: '' };
+};
+
+const confirmDelete = async () => {
+    try {
+        const { type, id } = deleteModalData.value;
+        
+        if (type === 'product') {
+            await productStore.deleteProduct(id);
+            notify.success('Product deleted successfully');
+        } else if (type === 'user') {
+            await adminStore.deleteUser(id);
+            notify.success('User deleted successfully');
+        } else if (type === 'order') {
             await adminStore.deleteOrder(id);
             notify.success('Order deleted successfully');
-        } catch (error) {
-            notify.error('Failed to delete order');
         }
+        
+        closeDeleteModal();
+    } catch (error) {
+        notify.error(error.response?.data?.message || `Failed to delete ${deleteModalData.value.type}`);
+        closeDeleteModal();
     }
 };
 

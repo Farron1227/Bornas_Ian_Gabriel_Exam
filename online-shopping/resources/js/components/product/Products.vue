@@ -159,7 +159,7 @@
             <div class="modal-content cart-modal" @click.stop>
                 <div class="cart-header">
                     <h2>🛒 Cart</h2>
-                    <button @click="placeOrder" class="place-order-btn">PLACE ORDER</button>
+                    <button @click="showPaymentConfirmation" class="place-order-btn">PLACE ORDER</button>
                 </div>
                 <div class="cart-body">
                     <div v-if="cartStore.items.length === 0" class="empty-cart">
@@ -206,6 +206,31 @@
                     </div>
                     <p class="thankyou-message">Thank you for shopping with us.</p>
                     <button @click="closeThankYou" class="close-btn">×</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Confirmation Modal -->
+        <div v-if="showPaymentModal" class="modal-overlay" @click="closePaymentModal">
+            <div class="modal-content payment-modal" @click.stop>
+                <div class="payment-content">
+                    <div class="payment-icon">💳</div>
+                    <h2>Confirm Payment</h2>
+                    <p class="payment-message">Are you sure you want to proceed with the payment?</p>
+                    <div class="payment-summary">
+                        <div class="summary-row">
+                            <span>Total Items:</span>
+                            <span class="summary-value">{{ cartStore.itemCount }}</span>
+                        </div>
+                        <div class="summary-row total-row">
+                            <span>Total Amount:</span>
+                            <span class="summary-value">₱ {{ parseFloat(cartStore.total).toFixed(2) }}</span>
+                        </div>
+                    </div>
+                    <div class="payment-actions">
+                        <button @click="confirmPayment" class="confirm-payment-btn">Proceed</button>
+                        <button @click="closePaymentModal" class="cancel-payment-btn">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -265,6 +290,7 @@ const showCartModal = ref(false);
 const showThankYouModal = ref(false);
 const showLogoutModal = ref(false);
 const showConfirmModal = ref(false);
+const showPaymentModal = ref(false);
 const selectedProduct = ref({});
 const selectedQuantity = ref(1);
 const addingToCart = ref(false);
@@ -402,6 +428,23 @@ const placeOrder = async () => {
     } catch (error) {
         notify.error(error.response?.data?.message || 'Failed to place order');
     }
+};
+
+const showPaymentConfirmation = () => {
+    if (cartStore.itemCount === 0) {
+        notify.error('Your cart is empty');
+        return;
+    }
+    showPaymentModal.value = true;
+};
+
+const closePaymentModal = () => {
+    showPaymentModal.value = false;
+};
+
+const confirmPayment = async () => {
+    showPaymentModal.value = false;
+    await placeOrder();
 };
 
 const closeThankYou = () => {

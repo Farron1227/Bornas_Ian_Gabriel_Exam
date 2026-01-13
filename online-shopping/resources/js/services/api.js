@@ -30,13 +30,18 @@ export const productAPI = {
     create: (data) => axios.post(`${API_URL}/products`, data, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
-    update: (id, data) => axios.post(`${API_URL}/products/${id}`, {
-        ...data,
-        _method: 'PUT'
-    }, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-    }),
+    update: (id, data) => {
+        data.append('_method', 'PUT');
+        return axios.post(`${API_URL}/products/${id}`, data, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+    },
     delete: (id) => axios.delete(`${API_URL}/products/${id}`),
+};
+
+// Category API
+export const categoryAPI = {
+    getAll: () => axios.get(`${API_URL}/categories`),
 };
 
 // Cart API

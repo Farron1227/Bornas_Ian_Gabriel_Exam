@@ -569,6 +569,123 @@
     letter-spacing: 0.3px;
 }
 
+/* Payment Confirmation Modal */
+.payment-modal {
+    max-width: 480px;
+    background: white;
+    border-radius: 24px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.payment-content {
+    padding: 40px 30px;
+    text-align: center;
+}
+
+.payment-icon {
+    font-size: 72px;
+    margin-bottom: 20px;
+    animation: paymentBounce 1s ease infinite;
+}
+
+@keyframes paymentBounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.payment-modal h2 {
+    color: var(--gray-900);
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.payment-message {
+    color: var(--gray-700);
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.payment-summary {
+    background: var(--purple-bg);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 15px;
+    color: var(--gray-700);
+}
+
+.summary-row.total-row {
+    border-top: 2px solid var(--purple-primary);
+    margin-top: 8px;
+    padding-top: 16px;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--gray-900);
+}
+
+.summary-value {
+    font-weight: 600;
+    color: var(--purple-primary);
+}
+
+.total-row .summary-value {
+    font-size: 20px;
+    color: var(--purple-primary);
+}
+
+.payment-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.confirm-payment-btn,
+.cancel-payment-btn {
+    padding: 14px 32px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 140px;
+}
+
+.confirm-payment-btn {
+    background: var(--purple-primary);
+    color: white;
+}
+
+.confirm-payment-btn:hover {
+    background: var(--purple-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(123, 79, 163, 0.4);
+}
+
+.cancel-payment-btn {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.cancel-payment-btn:hover {
+    background: var(--gray-300);
+    transform: translateY(-2px);
+}
+
 @media (max-width: 992px) {
     .modal-grid {
         grid-template-columns: 1fr;
@@ -583,7 +700,8 @@
     .product-detail-modal,
     .cart-modal,
     .thankyou-modal,
-    .logout-modal {
+    .logout-modal,
+    .payment-modal {
         width: 100%;
         max-width: 500px;
     }
@@ -593,6 +711,15 @@
     }
 
     .logout-buttons button {
+        width: 100%;
+    }
+    
+    .payment-actions {
+        flex-direction: column;
+    }
+    
+    .confirm-payment-btn,
+    .cancel-payment-btn {
         width: 100%;
     }
 }
