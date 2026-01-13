@@ -64,6 +64,11 @@ class UserController extends Controller
         try {
             $user = User::findOrFail($id);
 
+            Log::info('Updating user', [
+                'user_id' => $id,
+                'request_data' => $request->all()
+            ]);
+
             $validated = $request->validate([
                 'name' => 'sometimes|required|string|max:255',
                 'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $id,
@@ -71,6 +76,8 @@ class UserController extends Controller
                 'role' => 'nullable|in:customer,admin',
                 'is_active' => 'nullable|boolean',
             ]);
+
+            Log::info('Validated data', ['validated' => $validated]);
 
             if (isset($validated['password'])) {
                 $validated['password'] = Hash::make($validated['password']);
@@ -80,8 +87,11 @@ class UserController extends Controller
 
             $user->update($validated);
 
+            Log::info('User updated successfully', ['user' => $user]);
+
             return $this->successResponse($user, 'User updated successfully');
         } catch (ValidationException $e) {
+            Log::error('Validation failed', ['errors' => $e->errors()]);
             return $this->errorResponse('Validation failed', 422, $e->errors());
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $this->errorResponse('User not found', 404);

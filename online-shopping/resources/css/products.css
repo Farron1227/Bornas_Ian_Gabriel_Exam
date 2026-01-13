@@ -379,6 +379,20 @@
     font-size: 64px;
 }
 
+.placeholder-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #f3e5f5;
+}
+
+.placeholder-img-small {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #f3e5f5;
+}
+
 .product-info {
     padding: 20px;
     display: flex;

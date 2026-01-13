@@ -75,7 +75,7 @@
                     >
                         <div class="product-image">
                             <img v-if="product.image" :src="`/storage/${product.image}`" :alt="product.name" />
-                            <div v-else class="product-placeholder">📦</div>
+                            <img v-else :src="productPlaceholder" alt="No image" class="placeholder-img" />
                             <div v-if="product.stock === 0" class="out-of-stock-overlay">
                                 <span class="out-of-stock-text">OUT OF STOCK</span>
                             </div>
@@ -148,7 +148,7 @@
                 <div class="modal-body">
                     <div class="product-modal-image">
                         <img v-if="selectedProduct.image" :src="`/storage/${selectedProduct.image}`" :alt="selectedProduct.name" />
-                        <div v-else class="product-placeholder">📦</div>
+                        <img v-else :src="productPlaceholder" alt="No image" class="placeholder-img" />
                     </div>
                     <div class="product-modal-info">
                         <h2 class="modal-product-name">{{ selectedProduct.name }}</h2>
@@ -191,7 +191,7 @@
                         <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
                             <div class="cart-item-image">
                                 <img v-if="item.product.image" :src="`/storage/${item.product.image}`" :alt="item.product.name" />
-                                <div v-else class="product-placeholder-small">📦</div>
+                                <img v-else :src="productPlaceholderSmall" alt="No image" class="placeholder-img-small" />
                             </div>
                             <div class="cart-item-info">
                                 <h3>{{ item.product.name }}</h3>
@@ -297,6 +297,8 @@ import { useProductStore } from '../../stores/productStore';
 import { useRouter, useRoute } from 'vue-router';
 import { orderAPI } from '../../services/api';
 import logo from '../../../images/purplebug-logo.png';
+import productPlaceholder from '../../../images/product-placeholder.svg';
+import productPlaceholderSmall from '../../../images/product-placeholder-small.svg';
 
 const router = useRouter();
 const route = useRoute();

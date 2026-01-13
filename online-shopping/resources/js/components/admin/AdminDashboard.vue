@@ -186,6 +186,14 @@
                                 </td>
                                 <td>{{ formatDate(user.created_at) }}</td>
                                 <td class="action-btns">
+                                    <button 
+                                        @click="toggleUserStatus(user)" 
+                                        :class="['toggle-btn', user.is_active ? 'active' : 'inactive']"
+                                        :title="user.is_active ? 'Disable Account' : 'Enable Account'"
+                                        :disabled="user.id === authStore.currentUser?.id"
+                                    >
+                                        {{ user.is_active ? '✓' : '✕' }}
+                                    </button>
                                     <button @click="openUserForm(user)" class="edit-btn">✏️</button>
                                     <button 
                                         @click="deleteUser(user.id)" 
@@ -218,7 +226,7 @@
                             <label>Product Image</label>
                             <div class="image-preview" :class="{ 'error': productErrors.image }">
                                 <img v-if="imagePreview" :src="imagePreview" alt="Preview" />
-                                <div v-else class="placeholder">📷</div>
+                                <img v-else :src="cameraPlaceholder" alt="Upload" class="placeholder-img" />
                             </div>
                             <input type="file" @change="handleImageChange" accept="image/*" />
                             <span v-if="productErrors.image" class="error-message">{{ productErrors.image }}</span>
@@ -383,6 +391,32 @@
                 </div>
             </div>
         </div>
+
+        <!-- Toggle Status Modal -->
+        <div v-if="showToggleModal" class="modal-overlay" @click="closeToggleModal">
+            <div class="modal-content toggle-modal" @click.stop>
+                <div class="toggle-icon" :class="toggleModalData.newStatus ? 'enable' : 'disable'">
+                    {{ toggleModalData.newStatus ? '✓' : '✗' }}
+                </div>
+                <h2>{{ toggleModalData.newStatus ? 'Enable' : 'Disable' }} Account</h2>
+                <p class="toggle-message">
+                    Are you sure you want to <strong>{{ toggleModalData.newStatus ? 'enable' : 'disable' }}</strong> 
+                    <strong>{{ toggleModalData.userName }}</strong>'s account?
+                </p>
+                <p class="toggle-info" v-if="!toggleModalData.newStatus">
+                    This user will not be able to log in until their account is re-enabled.
+                </p>
+                <p class="toggle-info" v-else>
+                    This user will be able to log in and access their account.
+                </p>
+                <div class="toggle-actions">
+                    <button @click="confirmToggleStatus" :class="['confirm-toggle-btn', toggleModalData.newStatus ? 'enable' : 'disable']">
+                        {{ toggleModalData.newStatus ? 'Enable' : 'Disable' }}
+                    </button>
+                    <button @click="closeToggleModal" class="cancel-toggle-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -392,8 +426,9 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/authStore';
 import { useProductStore } from '../../stores/productStore';
 import { useAdminStore } from '../../stores/adminStore';
-import { categoryAPI } from '../../services/api';
+import { categoryAPI, userAPI } from '../../services/api';
 import logo from '../../../images/purplebug-logo.png';
+import cameraPlaceholder from '../../../images/camera-placeholder.svg';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -445,6 +480,14 @@ const deleteModalData = ref({
     id: null,
     name: '',
     message: ''
+});
+
+// Toggle Status Modal
+const showToggleModal = ref(false);
+const toggleModalData = ref({
+    user: null,
+    userName: '',
+    newStatus: false
 });
 
 onMounted(async () => {
@@ -695,6 +738,72 @@ const deleteUser = async (id) => {
         message: `Are you sure you want to delete "${userName}"? This will permanently remove the user and all associated data.`
     };
     showDeleteModal.value = true;
+};
+
+const toggleUserStatus = (user) => {
+    // Prevent toggling own account
+    if (user.id === authStore.currentUser?.id) {
+        notify({
+            type: 'error',
+            message: 'You cannot disable your own account'
+        });
+        return;
+    }
+
+    toggleModalData.value = {
+        user: user,
+        userName: user.name,
+        newStatus: !user.is_active
+    };
+    showToggleModal.value = true;
+};
+
+const closeToggleModal = () => {
+    showToggleModal.value = false;
+    toggleModalData.value = {
+        user: null,
+        userName: '',
+        newStatus: false
+    };
+};
+
+const confirmToggleStatus = async () => {
+    try {
+        const user = toggleModalData.value.user;
+        const newStatus = toggleModalData.value.newStatus;
+        const action = newStatus ? 'enable' : 'disable';
+
+        console.log('Toggling user status:', {
+            userId: user.id,
+            newStatus: newStatus,
+            action: action
+        });
+
+        const response = await userAPI.update(user.id, {
+            is_active: newStatus
+        });
+
+        console.log('Toggle response:', response.data);
+
+        if (response.data.success) {
+            await adminStore.fetchUsers();
+            notify({
+                type: 'success',
+                message: `User account ${action}d successfully`
+            });
+            closeToggleModal();
+        } else {
+            throw new Error('Update failed');
+        }
+    } catch (error) {
+        console.error('Error toggling user status:', error);
+        console.error('Error response:', error.response?.data);
+        notify({
+            type: 'error',
+            message: error.response?.data?.message || 'Failed to update user status'
+        });
+        closeToggleModal();
+    }
 };
 
 // Order Functions

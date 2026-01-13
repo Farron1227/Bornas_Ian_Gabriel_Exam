@@ -1,0 +1,14 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="300" fill="#f3e5f5"/>
+  <g transform="translate(150, 150)">
+    <!-- Box -->
+    <rect x="-50" y="-40" width="100" height="80" fill="#7B4FA3" rx="5"/>
+    <rect x="-50" y="-40" width="100" height="20" fill="#9B6FC9" rx="5"/>
+    <line x1="-50" y1="-30" x2="50" y2="-30" stroke="#f3e5f5" stroke-width="2"/>
+    <line x1="0" y1="-40" x2="0" y2="40" stroke="#f3e5f5" stroke-width="2"/>
+    <circle cx="0" cy="-30" r="5" fill="#f3e5f5"/>
+  </g>
+  <text x="150" y="220" font-family="Arial, sans-serif" font-size="16" fill="#7B4FA3" text-anchor="middle" font-weight="600">
+    No Image Available
+  </text>
+</svg>

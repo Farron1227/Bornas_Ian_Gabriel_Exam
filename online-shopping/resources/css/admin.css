@@ -238,7 +238,8 @@
 
 .edit-btn,
 .delete-btn,
-.view-btn {
+.view-btn,
+.toggle-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -246,6 +247,61 @@
     padding: 6px 10px;
     border-radius: 6px;
     transition: all 0.3s;
+}
+
+.toggle-btn {
+    font-size: 16px;
+    font-weight: 700;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-btn.active {
+    background: rgba(39, 174, 96, 0.1);
+    color: var(--success);
+}
+
+.toggle-btn.active:hover {
+    background: rgba(39, 174, 96, 0.2);
+}
+
+.toggle-btn.inactive {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--error);
+}
+
+.toggle-btn.inactive:hover {
+    background: rgba(231, 76, 60, 0.2);
+}
+
+.toggle-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.toggle-btn:disabled:hover {
+    background: rgba(39, 174, 96, 0.1) !important;
+    transform: none !important;
+}
+
+.toggle-btn.inactive:disabled:hover {
+    background: rgba(231, 76, 60, 0.1) !important;
+    transform: none !important;
+}
+
+.edit-btn:disabled,
+.delete-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.edit-btn:disabled:hover,
+.delete-btn:disabled:hover {
+    background: none !important;
+    transform: none !important;
 }
 
 .edit-btn:hover {
@@ -496,6 +552,11 @@ button:disabled:hover {
     object-fit: cover;
 }
 
+.image-preview .placeholder-img {
+    object-fit: contain;
+    background: #f9f3fc;
+}
+
 .image-preview-placeholder {
     font-size: 48px;
     color: var(--gray-400);
@@ -680,6 +741,129 @@ button:disabled:hover {
 .cancel-delete-btn:hover {
     background: var(--gray-300);
     transform: translateY(-2px);
+}
+
+/* Toggle Status Modal */
+.toggle-modal {
+    max-width: 480px;
+    padding: 40px;
+    text-align: center;
+}
+
+.toggle-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: 700;
+    animation: togglePulse 0.6s ease-out;
+}
+
+.toggle-icon.enable {
+    background: linear-gradient(135deg, rgba(39, 174, 96, 0.1) 0%, rgba(39, 174, 96, 0.2) 100%);
+    color: var(--success);
+    border: 3px solid var(--success);
+}
+
+.toggle-icon.disable {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.1) 0%, rgba(231, 76, 60, 0.2) 100%);
+    color: var(--error);
+    border: 3px solid var(--error);
+}
+
+@keyframes togglePulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.toggle-modal h2 {
+    color: var(--gray-900);
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.toggle-message {
+    color: var(--gray-700);
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.toggle-message strong {
+    color: var(--gray-900);
+}
+
+.toggle-info {
+    color: var(--gray-600);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 30px;
+    padding: 12px 20px;
+    background: var(--gray-50);
+    border-radius: 8px;
+}
+
+.toggle-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.confirm-toggle-btn,
+.cancel-toggle-btn {
+    padding: 14px 32px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 120px;
+}
+
+.confirm-toggle-btn.enable {
+    background: var(--success);
+    color: white;
+}
+
+.confirm-toggle-btn.enable:hover {
+    background: #229954;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.confirm-toggle-btn.disable {
+    background: var(--error);
+    color: white;
+}
+
+.confirm-toggle-btn.disable:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.cancel-toggle-btn {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.cancel-toggle-btn:hover {
+    background: var(--gray-300);
 }
 
 @media (max-width: 992px) {

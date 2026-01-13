@@ -96,7 +96,7 @@ class AuthController extends Controller
             }
 
             if (!$user->is_active) {
-                return $this->errorResponse('Unable to access account', 403);
+                return $this->errorResponse('Your account has been disabled. Please contact the administrator for assistance.', 403);
             }
 
             // Clear failed attempts on successful login
