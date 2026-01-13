@@ -63,16 +63,22 @@ class AuthController extends Controller
             $lockKey = 'login_locked_' . $email;
             $attemptsKey = 'login_attempts_' . $email;
 
-            // Check if email is locked
+            // Check if user exists first (before rate limiting)
+            $user = User::where('email', $email)->first();
+            
+            if (!$user) {
+                return $this->errorResponse('No account found with this email address.', 404);
+            }
+
+            // Check if email is locked (only for existing users)
             if (Cache::has($lockKey)) {
                 $remainingTime = Cache::get($lockKey) - now()->timestamp;
                 $minutes = ceil($remainingTime / 60);
                 return $this->errorResponse("Too many failed attempts. Please try again in {$minutes} minute(s).", 429);
             }
 
-            $user = User::where('email', $email)->first();
-
-            if (!$user || !Hash::check($validated['password'], $user->password)) {
+            // Check password
+            if (!Hash::check($validated['password'], $user->password)) {
                 // Increment failed attempts
                 $attempts = Cache::get($attemptsKey, 0) + 1;
                 Cache::put($attemptsKey, $attempts, now()->addMinutes(15));
@@ -86,7 +92,7 @@ class AuthController extends Controller
                 }
 
                 $remainingAttempts = 5 - $attempts;
-                return $this->errorResponse("Invalid login credentials. {$remainingAttempts} attempt(s) remaining.", 401);
+                return $this->errorResponse("Invalid password. {$remainingAttempts} attempt(s) remaining.", 401);
             }
 
             if (!$user->is_active) {

@@ -69,16 +69,32 @@
                     <div 
                         v-for="product in productStore.products" 
                         :key="product.id"
-                        @click="openProductModal(product)"
+                        @click="product.stock > 0 ? openProductModal(product) : null"
                         class="product-card"
+                        :class="{ 'out-of-stock-card': product.stock === 0 }"
                     >
                         <div class="product-image">
                             <img v-if="product.image" :src="`/storage/${product.image}`" :alt="product.name" />
                             <div v-else class="product-placeholder">📦</div>
+                            <div v-if="product.stock === 0" class="out-of-stock-overlay">
+                                <span class="out-of-stock-text">OUT OF STOCK</span>
+                            </div>
+                            <div v-else-if="product.stock <= 5" class="low-stock-badge">
+                                Only {{ product.stock }} left
+                            </div>
                         </div>
                         <div class="product-info">
                             <h3 class="product-name">{{ product.name }}</h3>
                             <p class="product-price">₱ {{ parseFloat(product.price).toFixed(2) }}</p>
+                            <div class="stock-status" :class="{
+                                'in-stock': product.stock > 5,
+                                'low-stock': product.stock > 0 && product.stock <= 5,
+                                'no-stock': product.stock === 0
+                            }">
+                                <span v-if="product.stock > 5">• In Stock</span>
+                                <span v-else-if="product.stock > 0">• Low Stock</span>
+                                <span v-else>• Out of Stock</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -137,8 +153,14 @@
                     <div class="product-modal-info">
                         <h2 class="modal-product-name">{{ selectedProduct.name }}</h2>
                         <p class="modal-product-price">₱{{ parseFloat(selectedProduct.price).toFixed(2) }}</p>
-                        <div class="stock-info" :class="{ 'out-of-stock': selectedProduct.stock === 0 }">
-                            {{ selectedProduct.stock > 0 ? `${selectedProduct.stock} in stock` : 'Out of Stock' }}
+                        <div class="stock-info" :class="{
+                            'in-stock': selectedProduct.stock > 5,
+                            'low-stock': selectedProduct.stock > 0 && selectedProduct.stock <= 5,
+                            'out-of-stock': selectedProduct.stock === 0
+                        }">
+                            <span v-if="selectedProduct.stock > 5">✓ In Stock ({{ selectedProduct.stock }} available)</span>
+                            <span v-else-if="selectedProduct.stock > 0">⚠️ Low Stock (Only {{ selectedProduct.stock }} left)</span>
+                            <span v-else>❌ Out of Stock</span>
                         </div>
                         <div class="quantity-section" v-if="selectedProduct.stock > 0">
                             <label>Quantity</label>
